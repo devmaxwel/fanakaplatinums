@@ -1,0 +1,21 @@
+{
+  "name": "fanakaplatinums",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./server/server.js",
+  "scripts": {
+    "start": "nodemon ./backend/server.js"
+  },
+  "author": "MAXWEL OCHIENG",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "express": "^4.18.1",
+    "joi": "^17.6.0",
+    "mongoose": "^6.4.1",
+    "nodemon": "^2.0.18"
+  }
+}
