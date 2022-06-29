@@ -1,12 +1,13 @@
 const express = require("express");
-const dotenv = require("dotenv");
+require("dotenv").config();
 const cors = require("cors");
 const connectdatabase = require("./utils/mongodb");
-dotenv.config();
+
 // routers
-const register = require("./routes/users/register.routes");
-const login = require("./routes/users/login.routes");
-const resetpass = require("./routes/users/passwordreset.routes");
+const user = require("./routes/users/user.routes");
+const userreset = require("./routes/users/userreset.routes");
+const product = require("./routes/products/products.routes");
+const payment = require("./routes/payment/payment.routes");
 
 // Middlwares
 const app = express();
@@ -15,13 +16,13 @@ app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 
 //--------APPLICATION RESTFUL API'S--------//
-// user authentication
-app.use("/api/v1/register", register);
-app.use("/api/v1/login", login);
-app.use("/api/v1/password-reset", resetpass);
-
-// products creations
-
+// user authentication midleware
+app.use("/api/v1", user);
+app.use("/api/v1/reset-password", userreset);
+// product middleware
+app.use("/api/v2", product);
+// payment & booking middleware
+app.use("/api/v3", payment);
 //--------APPLICATION RESTFUL API'S--------//
 
 // -------APPLICATION HOSTING------------//

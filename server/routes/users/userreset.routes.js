@@ -1,14 +1,13 @@
 const express = require("express");
 const tokenModel = require("../../models/token.model");
 const userModel = require("../../models/user.model");
-const resetPasswordValidation = require("../../validation/resetpassword.validate");
+const crypto = require("crypto");
+const resetPasswordValidation = require("../../validation/user/resetpassword.validate");
+const sendgridHelper = require("../../middleware/email.middleware");
 const Router = express.Router();
 
-Router.post("/", async (req, res) => {
-  const { error } = resetValidation.validate(req.body);
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
+// Send reset-link
+Router.post("/reset-link", async (req, res) => {
   const user = await userModel.findOne({ email: req.body.email });
   if (!user) {
     return res.status(404).send("email not found");
@@ -29,9 +28,10 @@ Router.post("/", async (req, res) => {
   res.status(200).send("password reset link has been sent to your email");
 });
 
-Router.get("/:userId/:token", async (req, res) => {
+// Get the registration form
+Router.get("/:userid/:token", async (req, res) => {
   try {
-    const user = await userModel.findById(req.params.userId);
+    const user = await userModel.findById(req.params.userid);
     if (!user) {
       return res.status(400).send("invalid link or token has expired");
     }
@@ -49,12 +49,13 @@ Router.get("/:userId/:token", async (req, res) => {
   }
 });
 
-Router.post("/:userId/:token", async (req, res) => {
+// Save Password
+Router.post("/:userid/:token", async (req, res) => {
   try {
     const { error } = resetPasswordValidation.validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const user = await userModel.findById(req.params.userId);
+    const user = await userModel.findById(req.params.userid);
     if (!user) {
       return res.status(400).send("invalid link or token has expired");
     }

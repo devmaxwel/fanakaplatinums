@@ -15,10 +15,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       type: String,
     },
-    admin: {
+    role: {
       required: true,
-      default: false,
-      type: Boolean,
+      default: "traveller",
+      type: String,
     },
   },
   {
@@ -41,3 +41,4 @@ userSchema.methods.matchpassword = async function (candidatepassword) {
 };
 const userModel = mongoose.model("users", userSchema);
 module.exports = userModel;
+

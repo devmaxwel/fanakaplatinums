@@ -25,13 +25,11 @@ class sendgridHelper {
       to: email,
       from: process.env.VERIFIED_SENDER,
       subject: "PASSWORD RESET EMAIL",
-      text: `you're receiving this email because you requested for password reset link. Please follow this link ${process.env.CLIENT_URL}/password-reset/${userId}/${token}`,
+      text: `you're receiving this email because you requested for password reset link. Please follow this link ${process.env.CLIENT_URL}/${userId}/${token}`,
     };
     sgMail
       .send(msg)
-      .then(() => {
-        console.log("reset link sent");
-      })
+      .then(() => {})
       .catch((err) => {
         console.log(err.message);
       });
