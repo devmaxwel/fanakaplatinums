@@ -6,7 +6,7 @@ const Router = express.Router();
 
 // PAYMENT BY CARD
 Router.post("/create_checkout_session", authenticated, (req, res) => {
-    
+
 });
 
 // PAYMENT BY MPESA

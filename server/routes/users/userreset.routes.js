@@ -4,13 +4,18 @@ const userModel = require("../../models/user.model");
 const crypto = require("crypto");
 const resetPasswordValidation = require("../../validation/user/resetpassword.validate");
 const sendgridHelper = require("../../middleware/email.middleware");
+const resetValidation = require("../../validation/user/reset.validate");
 const Router = express.Router();
 
 // Send reset-link
 Router.post("/reset-link", async (req, res) => {
+  const { error } = resetValidation.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
   const user = await userModel.findOne({ email: req.body.email });
   if (!user) {
-    return res.status(404).send("email not found");
+    return res.status(200).json({ message: "email not found" });
   }
 
   let token = await tokenModel.findOne({ userId: user._id });
@@ -25,7 +30,9 @@ Router.post("/reset-link", async (req, res) => {
     token.token,
     user._id
   );
-  res.status(200).send("password reset link has been sent to your email");
+  res
+    .status(200)
+    .json({ message: "password reset link has been sent to your email" });
 });
 
 // Get the registration form
@@ -41,11 +48,13 @@ Router.get("/:userid/:token", async (req, res) => {
       token: req.params.token,
     });
     if (!token) {
-      return res.status(400).send("invalid link or expired");
+      return res
+        .status(400)
+        .json({ message: "invalid link or token has expired" });
     }
-    res.status(200).send("valid url");
+    res.status(200).json({ message: "invalid link or expired" });
   } catch (error) {
-    res.status(500).send("an error occured");
+    res.status(500).json({ message: "an error occured" });
   }
 });
 
@@ -53,11 +62,14 @@ Router.get("/:userid/:token", async (req, res) => {
 Router.post("/:userid/:token", async (req, res) => {
   try {
     const { error } = resetPasswordValidation.validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error)
+      return res.status(400).json({ message: error.details[0].message });
 
     const user = await userModel.findById(req.params.userid);
     if (!user) {
-      return res.status(400).send("invalid link or token has expired");
+      return res
+        .status(400)
+        .json({ message: "invalid link or token has expired" });
     }
 
     const token = await tokenModel.findOne({
@@ -65,16 +77,16 @@ Router.post("/:userid/:token", async (req, res) => {
       token: req.params.token,
     });
     if (!token) {
-      return res.status(400).send("invalid link or expired");
+      return res.status(400).json({ message: "invalid link or expired" });
     }
-
+    
     user.password = req.body.password;
     await user.save();
     await token.delete();
 
-    res.send("password reset sucessfully.");
+    res.status(200).json({ message: "password reset sucessfully." });
   } catch (error) {
-    res.status(500).send("an error occured");
+    res.status(500).json({ message: "an error occured" });
   }
 });
 module.exports = Router;

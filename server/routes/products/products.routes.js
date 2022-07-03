@@ -6,76 +6,72 @@ const admin = require("../../middleware/admin.middleware");
 const userModel = require("../../models/user.model");
 const Router = express.Router();
 
-// CREATE PRODUCT
+// CREATE HOUSE
 Router.post("/createproduct", admin, async (req, res) => {
   const { error } = productValidation.validate(req.body);
   if (error) {
-    res.status(400).send({ message: error.details[0].message });
-  } else {
-    try {
-      if (req.body.image) {
-        const uploadRes = await cloudinary.uploader
-          .upload(req.body.image, {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
+  try {
+    const images = [];
+    [...req.body.image].map(async (img) => {
+      return new Promise((resolve) => {
+        return resolve(
+          cloudinary.uploader.upload(img, {
             upload_preset: "fanakaplatinums",
           })
-          .catch((err) => {
-            res.status(500).send({ message: err });
-          });
-        if (uploadRes) {
-          const product = await productsModel.create({
-            name: req.body.name,
-            location: req.body.location,
-            description: req.body.description,
-            price: req.body.price,
-            amenities: req.body.amenities,
-            image: [
-              {
-                id: uploadRes.public_id,
-                name: uploadRes.original_filename,
-                url: uploadRes.url,
-                secure_url: uploadRes.secure_url,
-              },
-            ],
-          });
-          if (product) {
-            return res
-              .status(200)
-              .send({ message: "house was created and saved" });
-          }
-        }
-        return;
-      }
-    } catch (error) {
-      res.status(500).send({ message: error });
-    }
+        );
+      })
+        .then((response) => {
+          images.push(response);
+        })
+        .catch((err) => {
+          res.status(400).json({ message: err.message });
+        });
+    });
+    setTimeout(async () => {
+      await productsModel.create({
+        name: req.body.name,
+        location: req.body.location,
+        description: req.body.description,
+        price: req.body.price,
+        amenities: req.body.amenities,
+        image: images,
+      });
+      console.log("house created successfully");
+      res.status(200).json({ message: "house created successfully" });
+    }, 10000);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
-// GET ALL PRODUCTS
+// GET ALL HOUSES
 Router.get("/getallproducts", async (_req, res) => {
   try {
     const products = await productsModel.find();
     if (products) {
-      return res.status(200).send(products);
+      return res.status(200).json(products);
     }
   } catch (error) {
-    res.status(500).send({ message: error });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// GET PRODUCT
+// GET SINGLE HOUSE
 Router.get("/find/:id", async (req, res) => {
   try {
     const product = await userModel.findById(req.params.id);
     if (product) {
-      return res.status(200).send(product);
+      return res.status(200).json(product);
     }
   } catch (error) {
-    res.status(500).send({ message: error });
+    res.status(500).json({ message: error.mesage });
   }
 });
 
-// UPDATE PRODUCT
+// UPDATE HOUSE
 Router.put("/:id", async (req, res) => {
   try {
     if (req.body.productImg) {
@@ -95,14 +91,7 @@ Router.put("/:id", async (req, res) => {
             {
               $set: {
                 ...req.body.product,
-                image: [
-                  {
-                    id: uploadRes.public_id,
-                    name: uploadRes.original_filename,
-                    url: uploadRes.url,
-                    secure_url: uploadRes.secure_url,
-                  },
-                ],
+                image: uploadRes,
               },
             },
             {
@@ -131,7 +120,7 @@ Router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE PRODUCT
+// DELETE HOUSE
 Router.delete("/:id", admin, async (req, res) => {
   try {
     const product = await productsModel.findById(req.params.id);

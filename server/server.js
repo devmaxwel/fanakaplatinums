@@ -1,7 +1,8 @@
 const express = require("express");
-require("dotenv").config();
 const cors = require("cors");
+require("dotenv").config();
 const connectdatabase = require("./utils/mongodb");
+const bodyParser = require("body-parser");
 
 // routers
 const user = require("./routes/users/user.routes");
@@ -11,9 +12,20 @@ const payment = require("./routes/payment/payment.routes");
 
 // Middlwares
 const app = express();
-app.use(express.json());
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+    limit: "100mb",
+    parameterLimit: 10000,
+  })
+);
+app.use(bodyParser.json({ limit: "100mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use(express.urlencoded({ extended: false }));
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin");
+  next();
+});
 
 //--------APPLICATION RESTFUL API'S--------//
 // user authentication midleware
