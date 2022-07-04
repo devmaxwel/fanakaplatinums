@@ -44,10 +44,10 @@ const CreateProduct = () => {
         setMessage(response.data.message);
         setTimeout(() => {
           return navigate("/forgotpass");
-        });
+        }, 5000);
       })
-      .catch((err) => {
-        setError(err.message);
+      .catch((error) => {
+        setError(error.message);
       });
   };
   console.log(productImg);
@@ -99,7 +99,7 @@ const CreateProduct = () => {
         <button type="submit">CREATE PRODUCT</button>
       </form>
       {error && <p>{error}</p>}
-      {message && <p>{error}</p>}
+      {message && <p>{message}</p>}
       <div>
         {productImg &&
           productImg?.map((img) => {

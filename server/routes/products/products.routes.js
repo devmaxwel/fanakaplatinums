@@ -3,14 +3,13 @@ const productsModel = require("../../models/products.model");
 const cloudinary = require("../../utils/cloudinary");
 const productValidation = require("../../validation/product/product.validate");
 const admin = require("../../middleware/admin.middleware");
-const userModel = require("../../models/user.model");
 const Router = express.Router();
 
 // CREATE HOUSE
-Router.post("/createproduct", admin, async (req, res) => {
+Router.post("/createproduct", async (req, res) => {
   const { error } = productValidation.validate(req.body);
   if (error) {
-    return res.status(400).json({ message: error.details[0].message });
+    return res.status(400).send({ message: error.details[0].message });
   }
 
   try {
@@ -27,7 +26,7 @@ Router.post("/createproduct", admin, async (req, res) => {
           images.push(response);
         })
         .catch((err) => {
-          res.status(400).json({ message: err.message });
+          res.status(400).send({ message: err.message });
         });
     });
     setTimeout(async () => {
@@ -40,10 +39,10 @@ Router.post("/createproduct", admin, async (req, res) => {
         image: images,
       });
       console.log("house created successfully");
-      res.status(200).json({ message: "house created successfully" });
-    }, 10000);
+      res.status(200).send({ message: "house created successfully" });
+    }, 50000);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).send({ message: error.message });
   }
 });
 
@@ -62,12 +61,12 @@ Router.get("/getallproducts", async (_req, res) => {
 // GET SINGLE HOUSE
 Router.get("/find/:id", async (req, res) => {
   try {
-    const product = await userModel.findById(req.params.id);
+    const product = await productsModel.findById(req.params.id);
     if (product) {
-      return res.status(200).json(product);
+      return res.status(200).send(product);
     }
   } catch (error) {
-    res.status(500).json({ message: error.mesage });
+    res.status(500).send({ message: error.mesage });
   }
 });
 

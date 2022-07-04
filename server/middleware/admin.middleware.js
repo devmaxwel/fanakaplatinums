@@ -7,7 +7,7 @@ const admin = asynchandler((req, res, next) => {
       next();
     } else {
       res
-        .send(403)
+        .status(403)
         .send({ message: "this function is only allowed to admins" });
     }
   });
