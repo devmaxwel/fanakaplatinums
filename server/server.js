@@ -6,7 +6,6 @@ const bodyParser = require("body-parser");
 
 // routers
 const user = require("./routes/users/user.routes");
-const userreset = require("./routes/users/userreset.routes");
 const product = require("./routes/products/products.routes");
 const payment = require("./routes/payment/payment.routes");
 
@@ -30,7 +29,6 @@ app.use(function (req, res, next) {
 //--------APPLICATION RESTFUL API'S--------//
 // user authentication midleware
 app.use("/api/v1", user);
-app.use("/api/v1/reset-password", userreset);
 // product middleware
 app.use("/api/v2", product);
 // payment & booking middleware

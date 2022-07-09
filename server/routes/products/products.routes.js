@@ -6,15 +6,15 @@ const admin = require("../../middleware/admin.middleware");
 const Router = express.Router();
 
 // CREATE HOUSE
-Router.post("/createproduct", async (req, res) => {
+Router.post("/createproduct", admin, async (req, res) => {
   const { error } = productValidation.validate(req.body);
   if (error) {
-    return res.status(400).send({ message: error.details[0].message });
+    return res.status(400).json({ message: error.details[0].message });
   }
 
   try {
     const images = [];
-    [...req.body.image].map(async (img) => {
+    const cloudinarySavepromises = [...req.body.image].map(async (img) => {
       return new Promise((resolve) => {
         return resolve(
           cloudinary.uploader.upload(img, {
@@ -26,27 +26,27 @@ Router.post("/createproduct", async (req, res) => {
           images.push(response);
         })
         .catch((err) => {
-          res.status(400).send({ message: err.message });
+          res.status(400).json({ message: err });
         });
     });
-    setTimeout(async () => {
-      await productsModel.create({
-        name: req.body.name,
-        location: req.body.location,
-        description: req.body.description,
-        price: req.body.price,
-        amenities: req.body.amenities,
-        image: images,
-      });
-      console.log("house created successfully");
-      res.status(200).send({ message: "house created successfully" });
-    }, 50000);
+    await Promise.all(cloudinarySavepromises);
+    await productsModel.create({
+      name: req.body.name,
+      location: req.body.location,
+      description: req.body.description,
+      price: req.body.price,
+      amenities: req.body.amenities,
+      image: images,
+    });
+    console.log("house created successfully");
+    res.status(200).json({ message: "house created successfully" });
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
 // GET ALL HOUSES
+
 Router.get("/getallproducts", async (_req, res) => {
   try {
     const products = await productsModel.find();
@@ -59,6 +59,7 @@ Router.get("/getallproducts", async (_req, res) => {
 });
 
 // GET SINGLE HOUSE
+
 Router.get("/find/:id", async (req, res) => {
   try {
     const product = await productsModel.findById(req.params.id);
@@ -71,51 +72,58 @@ Router.get("/find/:id", async (req, res) => {
 });
 
 // UPDATE HOUSE
-Router.put("/:id", async (req, res) => {
-  try {
-    if (req.body.productImg) {
-      const destroyRes = await cloudinary.uploader.destroy(
-        req.body.product.image.id
-      );
-      if (destroyRes) {
-        const uploadRes = await cloudinary.uploader.upload(
-          req.body.productImg,
-          {
-            upload_preset: "fanakaplatinums",
-          }
-        );
-        if (uploadRes) {
-          const updatedProduct = await productsModel.findByIdAndUpdate(
-            req.params.id,
-            {
-              $set: {
-                ...req.body.product,
-                image: uploadRes,
-              },
-            },
-            {
-              new: true,
-            }
+Router.put("/:id", admin, async (req, res) => {
+  let cloudinaryDeletedResponse;
+  if (req.body.imageupdate) {
+    cloudinaryDeletedResponse = [...req.body.image].map((img) => {
+      return new Promise((resolve) => {
+        return resolve(cloudinary.uploader.destroy(img));
+      });
+    });
+    await Promise.all(cloudinaryDeletedResponse);
+    const images = [];
+    const cloudinarySavepromises = [...req.body.imageupadte].map(
+      async (img) => {
+        return new Promise((resolve) => {
+          return resolve(
+            cloudinary.uploader.upload(img, {
+              upload_preset: "fanakaplatinums",
+            })
           );
-          res.status(200).send(updatedProduct);
-        } else {
-          try {
-            const updatedProduct = await productsModel.findByIdAndUpdate(
-              req.params.id,
-              {
-                $set: req.body.product,
-              },
-              {
-                new: true,
-              }
-            );
-            res.status(200).send(updatedProduct);
-          } catch (error) {}
-        }
+        })
+          .then((response) => {
+            images.push(response);
+          })
+          .catch((err) => {
+            res.status(400).json({ message: err });
+          });
       }
-    }
-  } catch (error) {
-    res.status(500).send({ message: error });
+    );
+    await Promise.all(cloudinarySavepromises);
+    await productsModel.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          ...req.body,
+          image: images,
+        },
+      },
+      { new: true }
+    );
+    res.status(200).json({ message: "house has been updated successfully" });
+  } else {
+    try {
+      await productsModel.findByIdAndUpdate(
+        req.params.id,
+        {
+          $set: {
+            ...req.body,
+          },
+        },
+        { new: true }
+      );
+      res.status(200).json({ message: "house was updated succefully" });
+    } catch (error) {}
   }
 });
 
@@ -124,18 +132,20 @@ Router.delete("/:id", admin, async (req, res) => {
   try {
     const product = await productsModel.findById(req.params.id);
     if (!product) {
-      return res.status(404).send({ message: "house not found" });
+      return res.status(404).json({ message: "house not found" });
     }
-    if (product.image.id) {
-      const destroyRes = await cloudinary.uploader.destroy(product.image.id);
-      if (destroyRes) {
-        const deletedProduct = await productsModel.findByIdAndDelete(
-          req.params.id
-        );
-        res.status(200).send(deletedProduct);
-      }
-      return res.status(200).send({ messgae: "house deleted successfully" });
-    }
+    const cloudinaryDeletedResponse = [...product.image].map(async (img) => {
+      return new Promise((resolve) => {
+        resolve(cloudinary.uploader.destroy(img.public_id));
+      }).catch((err) => {
+        res.status(500).json(err);
+        console.log(err);
+      });
+    });
+    await Promise.all(cloudinaryDeletedResponse);
+    await productsModel.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "house deleted successfully" });
+    console.log("this house was deleted", onfullfilled);
   } catch (error) {
     res.status(500).send({ mesage: error });
   }
