@@ -72,7 +72,7 @@ Router.get("/find/:id", async (req, res) => {
 });
 
 // UPDATE HOUSE
-Router.put("/:id", admin, async (req, res) => {
+Router.put("/:id", async (req, res) => {
   let cloudinaryDeletedResponse;
   if (req.body.imageupdate) {
     cloudinaryDeletedResponse = [...req.body.image].map((img) => {
@@ -123,7 +123,9 @@ Router.put("/:id", admin, async (req, res) => {
         { new: true }
       );
       res.status(200).json({ message: "house was updated succefully" });
-    } catch (error) {}
+    } catch (error) {
+      res.status(500).json({ message: `an error oaccured: ${error.message}` });
+    }
   }
 });
 

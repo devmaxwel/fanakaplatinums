@@ -1,5 +1,4 @@
 const express = require("express");
-const sendgridHelper = require("../../middleware/email.middleware");
 const userModel = require("../../models/user.model");
 const authtoken = require("../../utils/authtoken");
 const registerValidation = require("../../validation/user/register.validate");
@@ -8,6 +7,7 @@ const resetValidation = require("../../validation/user/reset.validate");
 const tokenModel = require("../../models/token.model");
 const resetPasswordValidation = require("../../validation/user/resetpassword.validate");
 const editUserValidate = require("../../validation/user/edituser.validate");
+const sendgridHelper = require("../../helpers/email.middleware");
 const Router = express.Router();
 
 // CREATE USER
@@ -83,7 +83,7 @@ Router.put("/:id", async (req, res) => {
     return res.status(400).json({ message: error.details[0].message });
   }
   try {
-    const updateduser = await userModel.findByIdAndUpdate(
+    await userModel.findByIdAndUpdate(
       req.params.id,
       {
         $set: {

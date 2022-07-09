@@ -8,17 +8,18 @@ const bodyParser = require("body-parser");
 const user = require("./routes/users/user.routes");
 const product = require("./routes/products/products.routes");
 const payment = require("./routes/payment/payment.routes");
+const wishlist = require("./routes/wishlist/wishlist.routes");
 
 // Middlwares
 const app = express();
 app.use(
   bodyParser.urlencoded({
     extended: true,
-    limit: "100mb",
-    parameterLimit: 10000,
+    limit: "200mb",
+    parameterLimit: 20000,
   })
 );
-app.use(bodyParser.json({ limit: "100mb" }));
+app.use(bodyParser.json({ limit: "200mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(function (req, res, next) {
@@ -27,21 +28,15 @@ app.use(function (req, res, next) {
 });
 
 //--------APPLICATION RESTFUL API'S--------//
-// user authentication midleware
 app.use("/api/v1", user);
-// product middleware
 app.use("/api/v2", product);
-// payment & booking middleware
 app.use("/api/v3", payment);
-//--------APPLICATION RESTFUL API'S--------//
+app.use("/api/v4", wishlist);
 
 // -------APPLICATION HOSTING------------//
-
 app.get("/", (req, res) => {
   res.status(200).json("server is up and running");
 });
-
-// -------APPLICATION HOSTING------------//
 
 // Server Initialization
 const PORT = process.env.PORT;
