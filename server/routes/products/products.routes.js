@@ -6,7 +6,7 @@ const admin = require("../../middleware/admin.middleware");
 const Router = express.Router();
 
 // CREATE HOUSE
-Router.post("/createproduct", admin, async (req, res) => {
+Router.post("/createproduct", async (req, res) => {
   const { error } = productValidation.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
