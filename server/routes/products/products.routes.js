@@ -1,12 +1,13 @@
 const express = require("express");
 const productsModel = require("../../models/products.model");
-const cloudinary = require("../../utils/cloudinary");
+const cloudinary = require("../../config/cloudinary");
 const productValidation = require("../../validation/product/product.validate");
 const admin = require("../../middleware/admin.middleware");
+const host = require("../../middleware/admin.middleware");
 const Router = express.Router();
 
 // CREATE HOUSE
-Router.post("/createproduct", async (req, res) => {
+Router.post("/createproduct", host, async (req, res) => {
   const { error } = productValidation.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
@@ -72,7 +73,7 @@ Router.get("/find/:id", async (req, res) => {
 });
 
 // UPDATE HOUSE
-Router.put("/:id", async (req, res) => {
+Router.put("/:id", host, async (req, res) => {
   let cloudinaryDeletedResponse;
   if (req.body.imageupdate) {
     cloudinaryDeletedResponse = [...req.body.image].map((img) => {
@@ -130,7 +131,7 @@ Router.put("/:id", async (req, res) => {
 });
 
 // DELETE HOUSE
-Router.delete("/:id", admin, async (req, res) => {
+Router.delete("/:id", host, async (req, res) => {
   try {
     const product = await productsModel.findById(req.params.id);
     if (!product) {

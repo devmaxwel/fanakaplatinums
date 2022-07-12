@@ -20,6 +20,12 @@ const userSchema = new mongoose.Schema(
       default: "traveller",
       type: String,
     },
+    is_host: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    suspended: { type: Boolean, default: false },
   },
   {
     timestamps: true,
@@ -41,4 +47,3 @@ userSchema.methods.matchpassword = async function (candidatepassword) {
 };
 const userModel = mongoose.model("users", userSchema);
 module.exports = userModel;
-

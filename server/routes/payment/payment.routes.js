@@ -85,12 +85,12 @@ Router.post("/initiate-mpesastk-push", access_token, (req, res) => {
         PartyB: shortCode,
         PhoneNumber: req.body.number,
         CallBackURL:
-          "https://7001-2c0f-fe38-224c-2c0e-c512-74a0-5f80-52c7.ngrok.io/api/v6/stk-webhook",
-        AccountReference: "RARI_PAY",
-        TransactionDesc: "Crypto Transactions",
+          "https://7001-2c0f-fe38-224c-2c0e-c512-74a0-5f80-52c7.ngrok.io/api/v6/mpesa-stk-webhook",
+        AccountReference: "FANAKAPLATINUMS",
+        TransactionDesc: "Accomodation",
       },
     },
-    (err, resp, body) => {
+    (err, _resp, body) => {
       if (err) {
         console.log(err);
       }

@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 const tokenSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "user",
+    ref: "users",
   },
   token: {
     type: String,

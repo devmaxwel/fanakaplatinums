@@ -1,26 +1,31 @@
 const mongoose = require("mongoose");
 const productsSchema = new mongoose.Schema({
-  name: {
+  hosting_user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "users",
+  },
+  property_name: {
     type: String,
     required: true,
   },
-  location: {
+  property_location: {
     type: String,
     required: true,
   },
-  description: {
+  property_description: {
     type: String,
     required: true,
   },
-  price: {
+  property_price: {
     type: Number,
     required: true,
   },
-  amenities: {
+  property_amenities: {
     type: Array,
     required: true,
   },
-  image: {
+  property_images: {
     type: Array,
     required: true,
   },

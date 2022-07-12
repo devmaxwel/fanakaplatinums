@@ -8,6 +8,7 @@ const tokenModel = require("../../models/token.model");
 const resetPasswordValidation = require("../../validation/user/resetpassword.validate");
 const editUserValidate = require("../../validation/user/edituser.validate");
 const sendgridHelper = require("../../helpers/email.middleware");
+const admin = require("../../middleware/admin.middleware");
 const Router = express.Router();
 
 // CREATE USER
@@ -44,6 +45,11 @@ Router.post("/login", async (req, res) => {
   const user = await userModel.findOne({ email: req.body.email });
   if (!user) {
     res.status(404).send("user with this email not found");
+  } else if (user.suspended) {
+    res.status(401).json({
+      message:
+        "your account has been suspended contact support fanakaplatinums@support.com for more details",
+    });
   } else if (user && (await user.matchpassword(req.body.password))) {
     const token = authtoken(user);
     res.status(200).send({ token: token });
@@ -53,7 +59,7 @@ Router.post("/login", async (req, res) => {
 });
 
 // GET ALL USERS PROTECTED BY ADMIN
-Router.get("/getallusers", async (req, res) => {
+Router.get("/getallusers", admin, async (req, res) => {
   try {
     const users = await userModel.find();
     if (users) {
@@ -65,7 +71,7 @@ Router.get("/getallusers", async (req, res) => {
 });
 
 // GET SINGLE USER
-Router.get("/find/:id", async (req, res) => {
+Router.get("/find/:id", admin, async (req, res) => {
   try {
     const user = await userModel.findById(req.params.id);
     if (user) {
@@ -77,7 +83,7 @@ Router.get("/find/:id", async (req, res) => {
 });
 
 // UPDATE USERS PROTECTED BY ADMIN
-Router.put("/:id", async (req, res) => {
+Router.put("/:id", admin, async (req, res) => {
   const { error } = editUserValidate.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
@@ -178,6 +184,24 @@ Router.post("/:userid/:token", async (req, res) => {
     res.status(200).json({ message: "password reset sucessfully." });
   } catch (error) {
     res.status(500).json({ message: "an error occured" });
+  }
+});
+
+// SUSPEND ACCOUNT
+Router.delete("/:id", admin, async (req, res) => {
+  try {
+    const user = await userModel.findById(req.params.id);
+    console.log(user.email);
+    await userModel.findByIdAndUpdate(
+      req.params.id,
+      { suspended: true },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json("you have suspended a user, an email has been sent to notify them");
+  } catch (error) {
+    res.status(500).json(error);
   }
 });
 
