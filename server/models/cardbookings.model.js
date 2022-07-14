@@ -1,14 +1,19 @@
 const mongoose = require("mongoose");
 const bookingSchema = new mongoose.Schema(
   {
-    user: {
+    booking_user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "users",
       required: true,
     },
-    bookings: { type: Array, required: true },
-    phone_number: { type: String },
-    billing_details: { type: Object },
+    booked_house_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "houses",
+    },
+    booking_details: { type: Array, required: true },
+    phone_number: { type: String, required: true },
+    billing_details: { type: Object, required: true },
     total_amount: { type: Number, required: true },
     status: {
       type: String,

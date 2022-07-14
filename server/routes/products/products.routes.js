@@ -2,47 +2,54 @@ const express = require("express");
 const productsModel = require("../../models/products.model");
 const cloudinary = require("../../config/cloudinary");
 const productValidation = require("../../validation/product/product.validate");
-const admin = require("../../middleware/admin.middleware");
-const host = require("../../middleware/admin.middleware");
+const host = require("../../middleware/host.middleware");
 const Router = express.Router();
 
 // CREATE HOUSE
 Router.post("/createproduct", host, async (req, res) => {
   const { error } = productValidation.validate(req.body);
   if (error) {
-    return res.status(400).json({ message: error.details[0].message });
-  }
-
-  try {
-    const images = [];
-    const cloudinarySavepromises = [...req.body.image].map(async (img) => {
-      return new Promise((resolve) => {
-        return resolve(
-          cloudinary.uploader.upload(img, {
-            upload_preset: "fanakaplatinums",
+    res.status(400).json({ message: error.details[0].message });
+    console.log(error.details[0].message);
+    return;
+  } else {
+    try {
+      const images = [];
+      const cloudinarySavepromises = [...req.body.image].map(async (img) => {
+        return new Promise((resolve) => {
+          return resolve(
+            cloudinary.uploader.upload(img, {
+              upload_preset: "fanakaplatinums",
+            })
+          );
+        })
+          .then((response) => {
+            images.push(response);
           })
-        );
-      })
-        .then((response) => {
-          images.push(response);
+          .catch((err) => {
+            res.status(400).json({ message: err });
+          });
+      });
+      await Promise.all(cloudinarySavepromises);
+      await productsModel
+        .create({
+          hosting_user_id: req.user.id,
+          property_name: req.body.name,
+          property_location: req.body.location,
+          property_description: req.body.description,
+          property_price: req.body.price,
+          property_amenities: req.body.amenities,
+          property_images: images,
         })
         .catch((err) => {
-          res.status(400).json({ message: err });
+          console.log(err.message);
         });
-    });
-    await Promise.all(cloudinarySavepromises);
-    await productsModel.create({
-      name: req.body.name,
-      location: req.body.location,
-      description: req.body.description,
-      price: req.body.price,
-      amenities: req.body.amenities,
-      image: images,
-    });
-    console.log("house created successfully");
-    res.status(200).json({ message: "house created successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+      console.log("house created successfully");
+      res.status(200).json({ message: "house created successfully" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+      console.log(error);
+    }
   }
 });
 

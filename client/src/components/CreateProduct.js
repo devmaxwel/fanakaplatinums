@@ -28,18 +28,31 @@ const CreateProduct = () => {
     const response = await Promise.all(files);
     setproductImg(response);
   };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     const url = "http://localhost:5000/api/v2/createproduct";
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyY2YxZDM4ZDhlYjE1NDRhNzBmOTc0MyIsInJvbGUiOiJ0cmF2ZWxsZXIiLCJpc19ob3N0Ijp0cnVlLCJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdDEyMzRAZ21haWwuY29tIiwic3VzcGVuZGVkIjpmYWxzZSwiaWF0IjoxNjU3NzgyMTIxLCJleHAiOjE2NjAzNzQxMjF9.3maAwIWzRjfkMMaVguBZpvmFkN_YPKnisncE4iituSA";
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
     await axios
-      .post(url, {
-        name: name,
-        location: location,
-        description: description,
-        price: price,
-        image: productImg,
-        amenities: amenities,
-      })
+      .post(
+        url,
+        {
+          name: name,
+          location: location,
+          description: description,
+          price: price,
+          image: productImg,
+          amenities: amenities,
+        },
+        config
+      )
       .then((response) => {
         setMessage(response.data.message);
         setTimeout(() => {

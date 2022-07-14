@@ -3,29 +3,14 @@ const authenticated = require("./authenticated.middleware");
 
 const admin = asynchandler((req, res, next) => {
   authenticated(req, res, () => {
-    if (req.user.role.admin) {
-      next();
-    } else {
-      res
-        .status(403)
-        .send({
-          message: "this function is only allowed to fanakapaltinums admins",
-        });
-    }
-  });
-});
-
-const host = asynchandler((req, res, next) => {
-  authenticated(req, res, () => {
-    if (req.user.is_host) {
+    if (req.user.role === "admin") {
       next();
     } else {
       res.status(403).send({
-        message: "this function is only allowed to fanakaplatinums hosts",
+        message: "this function is only allowed to fanakapaltinums admins",
       });
     }
   });
 });
 
 module.exports = admin;
-module.exports = host;

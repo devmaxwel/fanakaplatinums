@@ -55,49 +55,54 @@ Router.post("/create-checkout-session", authenticated, async (req, res) => {
 
 // MPESA ACCESS_TOKEN
 
-Router.get("/access-token", access_token, (req, res) => {
+Router.get("/access-token", authenticated, access_token, (req, res) => {
   res.status(200).json({ access_token: req.access_token });
 });
 
 // PAYMENT BY MPESA
-Router.post("/initiate-mpesastk-push", access_token, (req, res) => {
-  let url = process.env.ENDPOINT_STK_PUSH_SERVIRCE_URL;
-  let auth = "Bearer " + req.access_token;
-  const timeStamp = moment().format("YYYYMMDDHHmmss");
-  const passKey = process.env.LNMP_PASS_KEY;
-  const shortCode = process.env.LNMP_SHORTCODE;
-  const password = passwordbase64(shortCode, passKey, timeStamp);
+Router.post(
+  "/initiate-mpesastk-push",
+  authenticated,
+  access_token,
+  (req, res) => {
+    let url = process.env.ENDPOINT_STK_PUSH_SERVIRCE_URL;
+    let auth = "Bearer " + req.access_token;
+    const timeStamp = moment().format("YYYYMMDDHHmmss");
+    const passKey = process.env.LNMP_PASS_KEY;
+    const shortCode = process.env.LNMP_SHORTCODE;
+    const password = passwordbase64(shortCode, passKey, timeStamp);
 
-  request(
-    {
-      url: url,
-      method: "POST",
-      headers: {
-        Authorization: auth,
+    request(
+      {
+        url: url,
+        method: "POST",
+        headers: {
+          Authorization: auth,
+        },
+        json: {
+          BusinessShortCode: shortCode,
+          Password: password,
+          Timestamp: timeStamp,
+          TransactionType: "CustomerPayBillOnline",
+          Amount: req.body.amount,
+          PartyA: req.body.number,
+          PartyB: shortCode,
+          PhoneNumber: req.body.number,
+          CallBackURL:
+            "https://c244-2c0f-fe38-224c-2c0e-ee57-88d-cba3-cdc4.ngrok.io/api/v6/mpesa-stk-webhook",
+          AccountReference: "FANAKAPLATINUMS",
+          TransactionDesc: "Accomodation",
+        },
       },
-      json: {
-        BusinessShortCode: shortCode,
-        Password: password,
-        Timestamp: timeStamp,
-        TransactionType: "CustomerPayBillOnline",
-        Amount: req.body.amount,
-        PartyA: req.body.number,
-        PartyB: shortCode,
-        PhoneNumber: req.body.number,
-        CallBackURL:
-          "https://7001-2c0f-fe38-224c-2c0e-c512-74a0-5f80-52c7.ngrok.io/api/v6/mpesa-stk-webhook",
-        AccountReference: "FANAKAPLATINUMS",
-        TransactionDesc: "Accomodation",
-      },
-    },
-    (err, _resp, body) => {
-      if (err) {
-        console.log(err);
+      (err, _resp, body) => {
+        if (err) {
+          console.log(err);
+        }
+        res.status(200).json(body);
       }
-      res.status(200).json(body);
-    }
-  );
-});
+    );
+  }
+);
 
 // PAY HOSTS USING MPESA B2C
 Router.post("/initiate_business2customer_payment", (req, res) => {});

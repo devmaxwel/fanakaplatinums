@@ -1,4 +1,5 @@
 const express = require("express");
+const authenticated = require("../../../middleware/authenticated.middleware");
 const bookingsModel = require("../../../models/cardbookings.model");
 const Router = express.Router();
 
@@ -22,13 +23,6 @@ Router.post("/mpesa-stk-webhook", async (req, res) => {
           return result;
         }, {});
       }
-      await bookingsModel.create({
-        total_amount: Amount,
-        billing_details: billing_details,
-        phone_number: PhoneNumber,
-        user: req.body.userId,
-        bookings: req.body.bookings,
-      });
       const mappedResult = mapMetadata(CallbackMetadata);
       let { Amount, MpesaReceiptNumber, TransactionDate, PhoneNumber } =
         mappedResult;
@@ -43,6 +37,22 @@ Router.post("/mpesa-stk-webhook", async (req, res) => {
         date_of_tranasaction: date,
         phone_number: PhoneNumber,
       };
+      await bookingsModel
+        .create({
+          booking_user_id: req.user.id,
+          total_amount: Amount,
+          billing_details: billing_details,
+          phone_number: PhoneNumber,
+          user: req.body.userId,
+          bookings: req.body.bookings,
+        })
+        .then(() => {
+          // update host revenue database
+          // update payments table
+        })
+        .catch((err) => {
+          // if error occurs, send it to user
+        });
     } else {
       res.status(400).json({ message: errorrResponse });
       console.log("your transaction was not compeletd");

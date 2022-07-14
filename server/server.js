@@ -11,6 +11,7 @@ const payment = require("./routes/payment/payment.routes");
 const wishlist = require("./routes/wishlist/wishlist.routes");
 const stripewebhook = require("./routes/payment/webhooks/stripewebhook");
 const mpesawebhook = require("./routes/payment/webhooks/mpesawebhook");
+const authenticated = require("./middleware/authenticated.middleware");
 
 const app = express();
 
